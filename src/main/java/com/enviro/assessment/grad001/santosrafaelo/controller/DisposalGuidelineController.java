@@ -54,7 +54,7 @@ public class DisposalGuidelineController {
                 .build();
     }
 
-    @GetMapping("/get")
+    @GetMapping("/get-all")
     private APIResponse<List<DisposalGuidelineDto>> gatAllGuidelines(){
         List<DisposalGuidelineDto> disposalGuidelineDtos = disposalGuidelineService.gatAllDisposalGuidelines();
         return APIResponse.<List<DisposalGuidelineDto>>builder()
