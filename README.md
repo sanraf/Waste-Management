@@ -47,21 +47,21 @@ This project is a Spring Boot application developed for Enviro365's waste sortin
 - **GET /api/v1/category/get-all**: Retrieve all waste category.
 - **GET /api/v1/category/get/{id}**: Retrieve a specific waste category by ID.
 - **POST /api/v1/category/save**: Add a new waste category.
-- **PUT /api/v1category/update/{id}**: Update an existing waste category.
+- **PUT /api/v1/category/update/{id}**: Update an existing waste category.
 - **DELETE /api/v1/category/delete/{id}**: Delete a waste category.
 
 ### Disposal Guidelines
-- **GET /api/v1/guideline/get**: Retrieve all disposal guidelines.
+- **GET /api/v1/guideline/get-all**: Retrieve all disposal guidelines.
 - **GET /api/v1/guideline/get/{id}**: Retrieve a specific guideline by ID.
 - **POST /api/v1/guideline/save/{categoryId}**: Add a new guideline.
 - **PUT /api/v1/guideline/update/{id}**: Update an existing guideline.
 - **DELETE /api/v1/guideline/delete/{id}**: Delete a guideline.
 
 ### Recycling Tips
-- **GET /api/v1/tip/get/**: Retrieve all recycling tips.
+- **GET /api/v1/tip/get-all**: Retrieve all recycling tips.
 - **GET /api/v1/tip/get/{id}**: Retrieve a specific tip by ID.
 - **POST /api/v1/tip/save**: Add a new tip.
-- **PUT /api/v1/tipupdate/{id}**: Update an existing tip.
+- **PUT /api/v1/tip/update/{id}**: Update an existing tip.
 - **DELETE /api/v1/tip/delete{id}**: Delete a tip.
 
 ---
@@ -69,7 +69,7 @@ This project is a Spring Boot application developed for Enviro365's waste sortin
 ## Example JSON Payloads
 
 ### Waste Category
-**POST /api/categories**
+**POST /api/v1/category/save**
 ```json
 {
   "name": "Plastic",
@@ -78,7 +78,7 @@ This project is a Spring Boot application developed for Enviro365's waste sortin
 ```
 
 ### Disposal Guideline
-**POST /api/guidelines**
+**POST /api/v1/guideline/save**
 ```json
 {
   "guideline": "Rinse all plastic items before recycling."
@@ -86,7 +86,7 @@ This project is a Spring Boot application developed for Enviro365's waste sortin
 ```
 
 ### Recycling Tip
-**POST /api/tips**
+**POST /api/v1/tip/save**
 ```json
 {
   "tip": "Reuse jars for food storage instead of buying new containers."
@@ -95,9 +95,103 @@ This project is a Spring Boot application developed for Enviro365's waste sortin
 
 ---
 
+
+### Example for waste category Response **POST /api/v1/category/save**
+```json
+{
+  "statusMessage": "success",
+  "statusCode": "CREATED",
+  "result": {
+    "id": 1,
+    "name": "Composting Organic Waste",
+    "description": "How to compost organic waste properly to reduce landfill use.",
+    "guidelines": []
+  }
+}
+```
+
+---
+
+### Example for waste category Response **GET /api/v1/category/get-all**:
+```json
+{
+"statusMessage": "success",
+"statusCode": "ACCEPTED",
+"result": [
+    {
+        "id": 1,
+        "name": "Composting Organic Waste",
+        "description": "How to compost organic waste properly to reduce landfill use.",
+        "guidelines": [
+            {
+                "id": 1,
+                "guideline": "Composting Organic Waste",
+                "categoryId": 1
+                }
+            ]
+        }
+    ]
+}
+```
+
+### Example for Disposal Guidelines Response **POST /api/v1/guideline/save/1**
+```json
+{
+"statusMessage": "success",
+        "result": {
+        "id": null,
+        "guideline": "Composting Organic Waste",
+        "categoryId": 1
+   }
+}
+````
+
+### Example for Disposal Guidelines Response **GET /api/v1/guideline/get**
+```json
+{
+"statusMessage": "success",
+"result": [
+        {
+        "id": 1,
+        "guideline": "Composting Organic Waste",
+        "categoryId": 1
+        }
+    ]
+}
+````
+
+### Example for Recycling Tip Response **POST /api/v1/tip/save**
+```json
+{
+"statusMessage": "success",
+    "result": {
+        "id": 1,
+        "tip": "Reuse jars for food storage instead of buying new containers."
+        }
+}
+`````
+
+### Example for Recycling Tip Response **GET /api/v1/tip/get-all**
+```json
+{
+    "statusMessage": "success",
+        "result": [
+            {
+                "id": 1,
+                "tip": "Reuse jars for food storage instead of buying new containers."
+            },
+            {
+                "id": 2,
+                "tip": "Reuse xxxx xxx xx  xxx xx xxxxxxxx xxx xx xxx."
+            }
+    ]
+}
+````
+
 ## Error Handling
 - **400 Bad Request**: Invalid input data.
 - **404 Not Found**: WasteEntityNotFoundException.
+---
 
 ### Example Error Response
 ```json
@@ -116,10 +210,12 @@ This project is a Spring Boot application developed for Enviro365's waste sortin
 
 ### Example Validation
 ```java
-public class WasteCategoryRequest {
-    @NotNull(message = "name is required")
-    private String name;
-    private String description;
+
+public record WasteCategoryDto(
+        Long id,
+       @NotBlank(message = "category name is required")String name,
+       @NotBlank(message = "category description is required")String description, List<DisposalGuideline> guidelines) {
+
 }
 ```
 
