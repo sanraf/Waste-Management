@@ -19,7 +19,7 @@ public class APIResponse<T> {
     private String statusMessage;
     private String urlInstance;
     private String method;
-    private HttpStatus statusCode;
+    private int statusCode;
     private List<ErrorDto> errors;
     private T result;
 }

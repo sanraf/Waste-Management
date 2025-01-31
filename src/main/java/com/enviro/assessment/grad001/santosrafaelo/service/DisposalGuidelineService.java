@@ -12,5 +12,5 @@ public interface DisposalGuidelineService {
     DisposalGuidelineDto updateDisposalGuideline(DisposalGuidelineDto guidelineDto);
     void deleteDisposalGuideline(Long id);
     DisposalGuidelineDto getDisposalGuidelineById(Long id);
-    List<DisposalGuidelineDto> gatAllDisposalGuidelines();
+    List<DisposalGuidelineDto> getAllDisposalGuidelines();
 }

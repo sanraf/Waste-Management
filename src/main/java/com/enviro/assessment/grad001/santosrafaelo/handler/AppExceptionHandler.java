@@ -20,26 +20,25 @@ import java.util.List;
 public class AppExceptionHandler {
 
     @ExceptionHandler(WasteEntityNotFoundException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public APIResponse<?> wasteEntityNotFoundException(WasteEntityNotFoundException e,HttpServletRequest request){
         APIResponse<?> exceptionResponse = new APIResponse<>();
         return APIResponse.builder()
                 .message("Error")
                 .statusMessage(e.getMessage())
-                .statusCode(HttpStatus.NOT_FOUND)
+                .statusCode(HttpStatus.NOT_FOUND.value())
                 .method(request.getMethod())
                 .urlInstance(request.getServletPath())
                 .build();
     }
 
     @ExceptionHandler(BusinessOperationFailedException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public APIResponse<?> businessOperationFailedException(BusinessOperationFailedException e,HttpServletRequest request){
-        APIResponse<?> exceptionResponse = new APIResponse<>();
         return APIResponse.builder()
                 .message("Error")
                 .statusMessage(e.getMessage())
-                .statusCode(HttpStatus.BAD_REQUEST)
+                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .method(request.getMethod())
                 .urlInstance(request.getServletPath())
                 .build();
@@ -57,7 +56,7 @@ public class AppExceptionHandler {
 
         return APIResponse.builder()
                 .message("Error")
-                .statusCode(HttpStatus.BAD_REQUEST)
+                .statusCode(HttpStatus.BAD_REQUEST.value())
                 .method(request.getMethod())
                 .urlInstance(request.getServletPath())
                 .errors(errors)

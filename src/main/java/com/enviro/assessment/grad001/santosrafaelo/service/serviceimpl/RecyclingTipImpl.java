@@ -9,7 +9,7 @@ import com.enviro.assessment.grad001.santosrafaelo.repository.RecyclingTipReposi
 import com.enviro.assessment.grad001.santosrafaelo.service.RecyclingTipService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import static com.enviro.assessment.grad001.santosrafaelo.util.ExceptionMessage.TIP_NOT_FOUND;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,33 +24,40 @@ public class RecyclingTipImpl implements RecyclingTipService {
 
     @Override
     public RecyclingTipDto saveRecyclingTip(RecyclingTipDto tipDto) {
+
         try {
             RecyclingTip recyclingTip = RecyclingTip.builder()
-                            .tip(tipDto.tip()).build();
+                    .tip(tipDto.tip())
+                    .build();
 
             RecyclingTip saveTip = tipRepository.save(recyclingTip);
             log.info("RecyclingTiImpl: tip saved successfully in DB");
+
             return TipMapper.mapToTipDto().apply(saveTip);
         } catch (Exception e) {
             log.error("Exception occurred while creating recycling tip   {}",e.getMessage());
-            throw new BusinessOperationFailedException("Failed to create tip");
+            throw new BusinessOperationFailedException("Something went wrong");
         }
     }
 
     @Override
     public RecyclingTipDto updateRecyclingTip(RecyclingTipDto tipDto) {
+
         try {
             RecyclingTip newData = tipRepository.findById(tipDto.id())
                     .map(oldData ->{
                         Optional.ofNullable(tipDto.tip()).ifPresent(oldData::setTip);
                         return tipRepository.save(oldData);
-                    }).orElseThrow(() -> new WasteEntityNotFoundException("Cannot update non-existing top with id " + tipDto.id()));
+                    }).orElseThrow(() -> new WasteEntityNotFoundException(String.format(TIP_NOT_FOUND,tipDto.id())));
 
             log.info("RecyclingTiImpl: tip updated successfully in DB");
             return TipMapper.mapToTipDto().apply(newData);
         } catch (WasteEntityNotFoundException e) {
-            log.error("Exception occurred while updating recycling tip {}",e.getMessage());
-            throw new BusinessOperationFailedException("Failed to update tip");
+            log.error("Exception occurred while fetching waste category by ID  {}",e.getMessage());
+            throw new WasteEntityNotFoundException(e.getMessage());
+        }catch (Exception e) {
+            log.error(e.getMessage());
+            throw new BusinessOperationFailedException("Something went wrong");
         }
 
     }
@@ -59,31 +66,39 @@ public class RecyclingTipImpl implements RecyclingTipService {
     public void deleteRecyclingTip(Long id) {
         try {
             RecyclingTip tip = tipRepository.findById(id)
-                    .orElseThrow(() -> new WasteEntityNotFoundException("tip not found"));
+                    .orElseThrow(() -> new WasteEntityNotFoundException(String.format(TIP_NOT_FOUND,id)));
             tipRepository.delete(tip);
 
             log.info("RecyclingTiImpl: recycling tip deleted successfully");
         } catch (WasteEntityNotFoundException e) {
-            log.error("Exception occurred while deleting recycling tip {}",e.getMessage());
-            throw new BusinessOperationFailedException("Failed to delete recycling tip");
+            log.error(e.getMessage());
+            throw new WasteEntityNotFoundException(e.getMessage());
+        }catch (Exception e) {
+            log.error(e.getMessage());
+            throw new BusinessOperationFailedException("Something went wrong");
         }
     }
 
     @Override
     public RecyclingTipDto getRecyclingTipById(Long id) {
+
         try {
             RecyclingTip tip = tipRepository.findById(id)
-                     .orElseThrow(() -> new WasteEntityNotFoundException("tip not found"));
-            log.info("RecyclingTiImpl: guideline fetched by ID successfully from DB");
+                     .orElseThrow(() -> new WasteEntityNotFoundException(String.format(TIP_NOT_FOUND,id)));
+            log.info("RecyclingTiImpl: recycling tip fetched by ID successfully from DB");
             return TipMapper.mapToTipDto().apply(tip);
         } catch (WasteEntityNotFoundException e) {
+            log.error("Exception occurred while fetching recycling tip by ID");
+            throw new WasteEntityNotFoundException(e.getMessage());
+        }catch (Exception e) {
             log.error("Exception occurred while fetching tip by ID {}",e.getMessage());
-            throw new BusinessOperationFailedException("Failed to fetching tip");
+            throw new BusinessOperationFailedException("Something went wrong");
         }
     }
 
     @Override
-    public List<RecyclingTipDto> gatAllRecyclingTip() {
+    public List<RecyclingTipDto> getAllRecyclingTip() {
+
         try {
             return tipRepository.findAll()
                     .stream().map(tipRepository -> TipMapper.mapToTipDto().apply(tipRepository)).toList();

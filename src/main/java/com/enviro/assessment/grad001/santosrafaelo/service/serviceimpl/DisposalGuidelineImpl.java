@@ -9,6 +9,7 @@ import com.enviro.assessment.grad001.santosrafaelo.model.WasteCategory;
 import com.enviro.assessment.grad001.santosrafaelo.repository.DisposalGuidelineRepository;
 import com.enviro.assessment.grad001.santosrafaelo.repository.WasteCategoryRepository;
 import com.enviro.assessment.grad001.santosrafaelo.service.DisposalGuidelineService;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+
+import static com.enviro.assessment.grad001.santosrafaelo.util.ExceptionMessage.CATEGORY_NOT_FOUND;
+import static com.enviro.assessment.grad001.santosrafaelo.util.ExceptionMessage.GUIDELINE_NOT_FOUND;
 
 @Service
 @Slf4j
@@ -31,7 +35,7 @@ public class DisposalGuidelineImpl implements DisposalGuidelineService {
     public DisposalGuidelineDto saveDisposalGuideline(DisposalGuidelineDto guidelineDto, Long categoryId) {
         try {
             WasteCategory category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new WasteEntityNotFoundException("No category found with id " + categoryId));
+                    .orElseThrow(() -> new WasteEntityNotFoundException(String.format(CATEGORY_NOT_FOUND, categoryId)));
             log.debug("DisposalGuidelineImpl: category successfully fetched from DB {}",category);
             DisposalGuideline guideline = DisposalGuideline.builder()
                     .guideline(guidelineDto.guideline())
@@ -43,9 +47,12 @@ public class DisposalGuidelineImpl implements DisposalGuidelineService {
             categoryRepository.save(category);
             log.info("DisposalGuidelineImpl: guideline saved successfully in DB");
             return GuidelineMapper.mapToGuidelineDto().apply(guideline);
-        } catch (WasteEntityNotFoundException e) {
+        }catch (WasteEntityNotFoundException e) {
+            log.error("Exception occurred while creating guideline");
+            throw new WasteEntityNotFoundException(e.getMessage());
+        } catch (Exception e) {
             log.error("Exception occurred while creating disposal guideline {}",e.getMessage());
-            throw new BusinessOperationFailedException("Failed to create guideline");
+            throw new BusinessOperationFailedException("Something went wrong");
         }
     }
 
@@ -56,21 +63,24 @@ public class DisposalGuidelineImpl implements DisposalGuidelineService {
                     .map(oldData ->{
                         Optional.ofNullable(guidelineDto.guideline()).ifPresent(oldData::setGuideline);
                         return guidelineRepository.save(oldData);
-                    }).orElseThrow(() -> new WasteEntityNotFoundException("Cannot update non-existing guideline with id " + guidelineDto.id()));
+                    }).orElseThrow(() -> new WasteEntityNotFoundException(String.format(GUIDELINE_NOT_FOUND,guidelineDto.id())));
 
             log.info("DisposalGuidelineImpl: guideline updated successfully in DB");
             return GuidelineMapper.mapToGuidelineDto().apply(newData);
-        } catch (WasteEntityNotFoundException e) {
+        }catch (WasteEntityNotFoundException e) {
+            throw new WasteEntityNotFoundException(e.getMessage());
+        } catch (Exception e) {
             log.error("Exception occurred while updating disposal guideline {}",e.getMessage());
             throw new BusinessOperationFailedException("Failed to update guideline");
         }
     }
 
+    @Transactional
     @Override
     public void deleteDisposalGuideline(Long id) {
         try {
             DisposalGuideline guideline = guidelineRepository.findById(id)
-                    .orElseThrow(()-> new WasteEntityNotFoundException("Cannot delete non-existing guideline with id " + id));
+                    .orElseThrow(()-> new WasteEntityNotFoundException(String.format(GUIDELINE_NOT_FOUND,id)));
             WasteCategory category = categoryRepository.findById(guideline.getCategoryId())
                     .orElseThrow(() -> new WasteEntityNotFoundException("category not found"));
             log.debug("DisposalGuidelineImpl: guideline & category successfully fetched from DB {} {}",guideline,category);
@@ -79,6 +89,8 @@ public class DisposalGuidelineImpl implements DisposalGuidelineService {
 
             guidelineRepository.delete(guideline);
         } catch (WasteEntityNotFoundException e) {
+            throw new WasteEntityNotFoundException(e.getMessage());
+        }catch (Exception e) {
             log.error("Exception occurred while deleting disposal guideline {}",e.getMessage());
             throw new BusinessOperationFailedException("Failed to delete guideline");
         }
@@ -88,18 +100,20 @@ public class DisposalGuidelineImpl implements DisposalGuidelineService {
     public DisposalGuidelineDto getDisposalGuidelineById(Long id) {
         try {
             DisposalGuideline disposalGuideline = guidelineRepository.findById(id)
-                    .orElseThrow(() -> new WasteEntityNotFoundException("No guideline found with id " + id));
+                    .orElseThrow(() -> new WasteEntityNotFoundException(String.format(GUIDELINE_NOT_FOUND,id)));
 
             log.info("DisposalGuidelineImpl: guideline fetched by ID successfully from DB");
             return GuidelineMapper.mapToGuidelineDto().apply(disposalGuideline);
-        } catch (WasteEntityNotFoundException e) {
+        }catch (WasteEntityNotFoundException e) {
+            throw new WasteEntityNotFoundException(e.getMessage());
+        } catch (Exception e) {
             log.error("Exception occurred while fetching disposal guideline by ID {}",e.getMessage());
             throw new BusinessOperationFailedException("Failed to fetch guideline from DB");
         }
     }
 
     @Override
-    public List<DisposalGuidelineDto> gatAllDisposalGuidelines() {
+    public List<DisposalGuidelineDto> getAllDisposalGuidelines() {
         try {
             List<DisposalGuideline> guidelines = guidelineRepository.findAll();
 

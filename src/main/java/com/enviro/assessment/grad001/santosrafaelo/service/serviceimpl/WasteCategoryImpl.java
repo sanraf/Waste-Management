@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.enviro.assessment.grad001.santosrafaelo.util.ExceptionMessage.CATEGORY_NOT_FOUND;
+
 @Service
 @Slf4j
 @AllArgsConstructor
@@ -23,6 +25,7 @@ public class WasteCategoryImpl implements WasteCategoryService {
 
     @Autowired
     private final WasteCategoryRepository categoryRepository;
+
 
     @Override
     public WasteCategoryDto saveCategory(WasteCategoryDto categoryDto) {
@@ -50,11 +53,14 @@ public class WasteCategoryImpl implements WasteCategoryService {
                          Optional.ofNullable(categoryDto.name()).ifPresent(oldData::setName);
                          Optional.ofNullable(categoryDto.description()).ifPresent(oldData::setDescription);
                          return categoryRepository.save(oldData);
-                     }).orElseThrow(() -> new WasteEntityNotFoundException("Cannot update non-existing category with id " + categoryDto.id()));
+                     }).orElseThrow(() ->
+                            new WasteEntityNotFoundException(String.format(CATEGORY_NOT_FOUND,categoryDto.id())));
 
             log.info("WasteCategoryImpl: category updated successfully in DB");
             return CategoryMapper.mapToCategoryDto().apply(newData);
         } catch (WasteEntityNotFoundException e) {
+            throw new WasteEntityNotFoundException(e.getMessage());
+        }catch (Exception e) {
             log.error("Exception occurred while updating waste category  {}",e.getMessage());
             throw new BusinessOperationFailedException("Failed to update category");
         }
@@ -64,23 +70,31 @@ public class WasteCategoryImpl implements WasteCategoryService {
     public void deleteCategory(Long id) {
         try {
             categoryRepository.findById(id)
-                    .ifPresentOrElse(categoryRepository::delete,()->{ throw new WasteEntityNotFoundException("Cannot delete non-existing category with id " + id);});
+                    .ifPresentOrElse(categoryRepository::delete,()->{
+                        throw new WasteEntityNotFoundException(String.format(CATEGORY_NOT_FOUND,id));});
             log.info("WasteCategoryImpl: category deleted successfully in DB");
-        } catch (Exception e) {
+        }catch (WasteEntityNotFoundException e) {
+            throw new WasteEntityNotFoundException(e.getMessage());
+        }catch (Exception e) {
             log.error("Exception occurred while deleting waste category  {}",e.getMessage());
-            throw new BusinessOperationFailedException("Failed to deleting category");
+               throw new BusinessOperationFailedException("Failed to deleting category");
         }
     }
 
     @Override
     public WasteCategoryDto getCategoryById(Long id) {
         try {
-            WasteCategory category = categoryRepository.findById(id).orElseThrow(() -> new WasteEntityNotFoundException("Not category found with id " + id));
+
+            WasteCategory category = categoryRepository.findById(id).orElseThrow(() ->
+                    new WasteEntityNotFoundException(String.format(CATEGORY_NOT_FOUND,id)));
             log.info("WasteCategoryImpl: category fetched successfully from DB");
             return CategoryMapper.mapToCategoryDto().apply(category);
         } catch (WasteEntityNotFoundException e) {
-            log.error("Exception occurred while fetching waste category by ID  {}",e.getMessage());
-            throw new BusinessOperationFailedException("Failed to fetch category");
+            throw new WasteEntityNotFoundException(e.getMessage());
+        }
+         catch(Exception e){
+            log.error(e.getMessage());
+            throw new BusinessOperationFailedException("Failure in fetching category");
         }
     }
 

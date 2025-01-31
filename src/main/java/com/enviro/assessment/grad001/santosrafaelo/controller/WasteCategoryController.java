@@ -23,53 +23,58 @@ public class WasteCategoryController {
     private final WasteCategoryService categoryService;
 
     @PostMapping("/save")
+    @ResponseStatus(HttpStatus.CREATED)
     private APIResponse<WasteCategoryDto> saveCategory(@RequestBody @Valid WasteCategoryDto categoryDto){
         WasteCategoryDto wasteCategoryDto = categoryService.saveCategory(categoryDto);
         return APIResponse.<WasteCategoryDto>builder()
-                .statusMessage("success")
-                .statusCode(HttpStatus.CREATED)
+                .message("Success")
+                .statusCode(HttpStatus.CREATED.value())
                 .result(wasteCategoryDto)
                 .build();
     }
 
     @GetMapping("/get-all")
+    @ResponseStatus(HttpStatus.OK)
     private APIResponse<List<WasteCategoryDto>> getAllCategories(){
         List<WasteCategoryDto> categoryDtos = categoryService.gatAllCategory();
 
         return APIResponse.<List<WasteCategoryDto>>builder()
-                .statusMessage("success")
-                .statusCode(HttpStatus.ACCEPTED)
+                .message("Success")
+                .statusCode(HttpStatus.OK.value())
                 .result(categoryDtos)
                 .build();
     }
 
     @GetMapping("/get/{id}")
+    @ResponseStatus(HttpStatus.OK)
     private APIResponse<WasteCategoryDto> getAllCategoryById(@PathVariable Long id){
         WasteCategoryDto category = categoryService.getCategoryById(id);
         return APIResponse.<WasteCategoryDto>builder()
-                .statusMessage("success")
-                .statusCode(HttpStatus.ACCEPTED)
+                .message("Success")
+                .statusCode(HttpStatus.OK.value())
                 .result(category)
                 .build();
     }
 
     @PutMapping("/update")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     private APIResponse<WasteCategoryDto> updateCategory(@RequestBody WasteCategoryDto categoryDto){
         WasteCategoryDto wasteCategoryDto = categoryService.updateCategory(categoryDto);
 
         return APIResponse.<WasteCategoryDto>builder()
-                .statusMessage("success")
-                .statusCode(HttpStatus.ACCEPTED)
+                .message("Success")
+                .statusCode(HttpStatus.ACCEPTED.value())
                 .result(wasteCategoryDto)
                 .build();
     }
 
     @DeleteMapping("/delete/{id}")
+    @ResponseStatus(HttpStatus.OK)
     private APIResponse<?> deleteCategory(@PathVariable Long id){
         categoryService.deleteCategory(id);
         return APIResponse.<WasteCategoryDto>builder()
-                .statusMessage("success")
-                .statusCode(HttpStatus.ACCEPTED)
+                .message("Success")
+                .statusCode(HttpStatus.OK.value())
                 .build();
     }
 }

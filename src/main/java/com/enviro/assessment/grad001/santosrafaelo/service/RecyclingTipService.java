@@ -12,5 +12,5 @@ public interface RecyclingTipService {
     RecyclingTipDto updateRecyclingTip(RecyclingTipDto tipDto);
     void deleteRecyclingTip(Long id);
     RecyclingTipDto getRecyclingTipById(Long id);
-    List<RecyclingTipDto> gatAllRecyclingTip();
+    List<RecyclingTipDto> getAllRecyclingTip();
 }

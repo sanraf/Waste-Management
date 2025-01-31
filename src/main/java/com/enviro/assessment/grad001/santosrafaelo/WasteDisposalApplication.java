@@ -11,6 +11,7 @@ public class WasteDisposalApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(WasteDisposalApplication.class, args);
+		System.out.println("Hello world");
 
 	}
 
